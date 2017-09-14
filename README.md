@@ -1,10 +1,19 @@
-# stack-docker
-Meta-project for the Elastic Docker images.
+# local-elk-stack
 
-## Quick Demo
-Try `docker-compose up` to create a demonstration Elastic stack with
-Elasticsearch, Kibana, Logstash, Auditbeat, Metricbeat, Filebeat, Packetbeat, and Heartbeat.
+A local environment for outputting your Docker logs to. Update the service you want to ship logs from in your `docker-compose.yml` with the `logging` section:
 
-Point a browser at `http://localhost:5601` to see the results.
+```
+  virtualenv:
+    image: lambci/lambda:build-python3.6
+    env_file: .env
+    working_dir: /usr/src/app
+    entrypoint: []
+    volumes:
+      - ./:/usr/src/app:Z
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+```
 
-Log in with `elastic` / `changeme`.
+Your kibana instance will be available at `http://localhost:5601`.
