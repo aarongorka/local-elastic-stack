@@ -1,6 +1,8 @@
 # local-elk-stack
 
-A local environment for outputting your Docker logs to. Update the service you want to ship logs from in your `docker-compose.yml` with the `logging` section:
+A local environment for outputting your Docker logs to. Run `make up` to bring up the ELK stack, and leave it running.
+
+In your project, update the service you want to ship logs from in your `docker-compose.yml` with the `logging` section:
 
 ```
   virtualenv:
@@ -15,5 +17,4 @@ A local environment for outputting your Docker logs to. Update the service you w
       options:
         gelf-address: "udp://127.0.0.1:12201"
 ```
-
 Your kibana instance will be available at `http://localhost:5601`.
