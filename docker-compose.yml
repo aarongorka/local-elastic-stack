@@ -22,6 +22,8 @@ services:
     environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1', 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
+    volumes:
+      - elasticsearch_db:/var/lib/elasticsearch:Z
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
@@ -34,11 +36,13 @@ services:
     image: docker.elastic.co/logstash/logstash:${TAG}
     environment:
       - 'xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}'
+    ports: ['127.0.0.1:12201:12201/udp']
     # Provide a simple pipeline configuration for Logstash with a bind-mounted file.
     volumes:
-      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:Z
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_logstash']
+    command: ["--config.reload.automatic"]
 
   auditbeat:
     image: docker.elastic.co/beats/auditbeat:${TAG}
@@ -47,19 +51,6 @@ services:
     pid: host
     networks: ['stack']
     depends_on: ['elasticsearch']
-
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:${TAG}
-    # If the host system has logs at "/var/log", mount them at "/mnt/log"
-    # inside the container, where Filebeat can find them.
-    # volumes: ['/var/log:/mnt/log:ro']
-    networks: ['stack']
-    depends_on: ['elasticsearch', 'setup_filebeat']
-
-  heartbeat:
-    image: docker.elastic.co/beats/heartbeat:${TAG}
-    networks: ['stack']
-    depends_on: ['elasticsearch', 'setup_heartbeat']
 
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
@@ -94,37 +85,13 @@ services:
   # Run a short-lived container to set up Logstash.
   setup_logstash:
     image: centos:7
-    volumes: ['./scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:ro']
+    volumes: ['./scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:Z']
     # The script may have CR/LF line endings if using Docker for Windows, so
     # make sure that they don't confuse Bash.
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-logstash.sh | tr -d "\r" | bash']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch']
-
-  setup_auditbeat:
-    image: docker.elastic.co/beats/auditbeat:${TAG}
-    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh auditbeat
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
-
-  setup_filebeat:
-    image: docker.elastic.co/beats/filebeat:${TAG}
-    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh filebeat
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
-
-  setup_heartbeat:
-    image: docker.elastic.co/beats/heartbeat:${TAG}
-    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh heartbeat
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
 
   setup_metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
@@ -144,3 +111,5 @@ services:
     depends_on: ['kibana']
 
 networks: {stack: {}}
+volumes:
+    elasticsearch_db:

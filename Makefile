@@ -5,26 +5,8 @@ ELASTIC_VERSION := $(shell awk 'BEGIN { FS = "[= ]" } /^ELASTIC_VERSION=/ { prin
 endif
 export ELASTIC_VERSION
 
-ifndef GIT_BRANCH
-GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-endif
+up:
+	docker-compose up
 
-TARGETS := elasticsearch logstash kibana beats
-
-images: $(TARGETS)
-push: $(TARGETS:%=%-push)
-clean: $(TARGETS:%=%-clean)
-
-$(TARGETS): $(TARGETS:%=%-checkout)
-	(cd stack/$@ && make)
-
-$(TARGETS:%=%-push): $(TARGETS:%=%-checkout)
-	(cd stack/$(@:%-push=%) && make push)
-
-$(TARGETS:%=%-checkout):
-	test -d stack/$(@:%-checkout=%) || \
-          git clone https://github.com/elastic/$(@:%-checkout=%)-docker.git stack/$(@:%-checkout=%)
-	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard origin/$(GIT_BRANCH))
-
-$(TARGETS:%=%-clean):
-	rm -rf stack/$(@:%-clean=%)
+down:
+	docker-compose down
