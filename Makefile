@@ -6,7 +6,10 @@ endif
 export ELASTIC_VERSION
 
 up:
-	docker-compose up
+	docker-compose up -d
 
 down:
 	docker-compose down
+
+clean:
+	docker-compose down -v

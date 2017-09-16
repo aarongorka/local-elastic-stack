@@ -23,7 +23,7 @@ services:
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
     volumes:
-      - elasticsearch_db:/var/lib/elasticsearch:Z
+      - elasticsearch_db:/usr/share/elasticsearch/data:Z
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
@@ -85,22 +85,22 @@ services:
     networks: ['stack']
     depends_on: ['elasticsearch']
 
-  setup_metricbeat:
-    image: docker.elastic.co/beats/metricbeat:${TAG}
-    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh metricbeat
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
-
-  setup_packetbeat:
-    image: docker.elastic.co/beats/packetbeat:${TAG}
-    cap_add: ['NET_RAW', 'NET_ADMIN']
-    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh packetbeat
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
+#  setup_metricbeat:
+#    image: docker.elastic.co/beats/metricbeat:${TAG}
+#    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+#    command: /usr/local/bin/setup-beat.sh metricbeat
+#    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+#    networks: ['stack']
+#    depends_on: ['kibana']
+#
+#  setup_packetbeat:
+#    image: docker.elastic.co/beats/packetbeat:${TAG}
+#    cap_add: ['NET_RAW', 'NET_ADMIN']
+#    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+#    command: /usr/local/bin/setup-beat.sh packetbeat
+#    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+#    networks: ['stack']
+#    depends_on: ['kibana']
 
 networks: {stack: {}}
 volumes:
