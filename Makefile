@@ -13,3 +13,6 @@ down:
 
 clean:
 	docker-compose down -v
+
+restart:
+	docker-compose restart

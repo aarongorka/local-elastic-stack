@@ -42,7 +42,7 @@ services:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:Z
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_logstash']
-    command: ["--config.reload.automatic"]
+#    command: ["--config.reload.automatic"]
 
 #  metricbeat:
 #    image: docker.elastic.co/beats/metricbeat:${TAG}
