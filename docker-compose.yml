@@ -44,6 +44,22 @@ services:
     depends_on: ['elasticsearch', 'setup_logstash']
 #    command: ["--config.reload.automatic"]
 
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${TAG}
+    # If the host system has logs at "/var/log", mount them at "/mnt/log"
+    # inside the container, where Filebeat can find them.
+    volumes: ['./access.log:/var/log/nginx/access.log:Z', './config/filebeat.yml:/usr/share/filebeat/filebeat.yml:Z']
+    networks: ['stack']
+    depends_on: ['setup_filebeat', 'elasticsearch']
+
+  setup_filebeat:
+    image: docker.elastic.co/beats/filebeat:${TAG}
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:Z']
+    command: /usr/local/bin/setup-beat.sh filebeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
 #  metricbeat:
 #    image: docker.elastic.co/beats/metricbeat:${TAG}
 #    # The commented sections below enable Metricbeat to monitor the Docker host,
